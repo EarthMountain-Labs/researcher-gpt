@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_e2bf8515f8c04b64878aa230ada33602 }}/reseacher
+        tags: mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_e2bf8515f8c04b64878aa230ada33602 }}/reseacher:latest
         file: ./Dockerfile
 
   deploy:
