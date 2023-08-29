@@ -22,15 +22,15 @@ jobs:
     - name: Log in to registry
       uses: docker/login-action@v2
       with:
-        registry: https://mcr.microsoft.com/
-        username: ${{ secrets.AzureAppService_ContainerUsername_e2bf8515f8c04b64878aa230ada33602 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_673806154b17459e8c26c714a15ca6d6 }}
+        registry: https://index.docker.io/v1/
+        username: ${{ secrets.AzureAppService_ContainerUsername_2eab369d914d41c8b7ca78722094b4f3 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_10d410bf7546462ba9d7c3360e7c18ef }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_e2bf8515f8c04b64878aa230ada33602 }}/reseacher:latest
+        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_2eab369d914d41c8b7ca78722094b4f3 }}/researcher:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
@@ -47,5 +47,5 @@ jobs:
       with:
         app-name: 'fa-docker-codeflo-ra'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_f726f022c1ec460f89cabe276577284c }}
-        images: 'mcr.microsoft.com/${{ secrets.AzureAppService_ContainerUsername_e2bf8515f8c04b64878aa230ada33602 }}/reseacher:${{ github.sha }}'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_b3c756b8007d41b6a744cc63920822d4 }}
+        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_2eab369d914d41c8b7ca78722094b4f3 }}/researcher:${{ github.sha }}'
