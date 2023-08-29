@@ -7,4 +7,3 @@ langchain
 beautifulsoup4
 tiktoken
 uvicorn
-memory-profiler
