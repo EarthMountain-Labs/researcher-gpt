@@ -1,7 +1,10 @@
+azure-functions
 fastapi[all]
 openai
 python-dotenv
 pydantic==1.*
 langchain
-bs4
+beautifulsoup4
 tiktoken
+uvicorn
+memory-profiler

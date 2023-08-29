@@ -1,6 +1,8 @@
+import logging
+
+import azure.functions as func
 import os
 from dotenv import load_dotenv
-
 from langchain import PromptTemplate
 from langchain.agents import initialize_agent, Tool
 from langchain.agents import AgentType
@@ -16,7 +18,7 @@ from bs4 import BeautifulSoup
 import requests
 import json
 from langchain.schema import SystemMessage
-from fastapi import FastAPI
+
 
 load_dotenv()
 brwoserless_api_key = os.getenv("BROWSERLESS_API_KEY")
@@ -170,37 +172,21 @@ agent = initialize_agent(
     memory=memory,
 )
 
+app = func.FunctionApp()
 
-# 4. Use streamlit to create a web app
-# def main():
-#     st.set_page_config(page_title="AI research agent", page_icon=":bird:")
-
-#     st.header("AI research agent :bird:")
-#     query = st.text_input("Research goal")
-
-#     if query:
-#         st.write("Doing research for ", query)
-
-#         result = agent({"input": query})
-
-#         st.info(result['output'])
-
-
-# if __name__ == '__main__':
-#     main()
-
-
-# 5. Set this as an API endpoint via FastAPI
-app = FastAPI()
-
-
-class Query(BaseModel):
-    query: str
-
-
-@app.post("/")
-def researchAgent(query: Query):
-    query = query.query
+@app.function_name(name="ResearchAgent")
+@app.route(route="ResearchAgent")
+def main(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
+    req_body = req.get_json()
+    query = req_body.get('query')
     content = agent({"input": query})
     actual_content = content['output']
-    return actual_content
+    
+    if query:
+        return func.HttpResponse(f"{actual_content}")
+    else:
+        return func.HttpResponse(
+             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
+             status_code=200
+        )
