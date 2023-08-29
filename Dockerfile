@@ -1,16 +1,15 @@
-# Use an official Python runtime as a base image
-FROM python:3.9-slim-buster
+# To enable ssh & remote debugging on app service change the base image to the one below
+FROM mcr.microsoft.com/azure-functions/python:4-python3.11-appservice
+# FROM mcr.microsoft.com/azure-functions/python:4-python3.11
 
-# Set the working directory in the container
-WORKDIR /app
+ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+COPY requirements.txt /
+RUN pip install -r /requirements.txt
 
-# Install required packages
-RUN pip install -r requirements.txt
+COPY . /home/site/wwwroot
 
-# Make port 80 available to the world outside this container
 EXPOSE 80
 
 
