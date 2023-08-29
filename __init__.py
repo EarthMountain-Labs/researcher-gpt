@@ -172,10 +172,7 @@ agent = initialize_agent(
     memory=memory,
 )
 
-app = func.FunctionApp()
 
-@app.function_name(name="ResearchAgent")
-@app.route(route="ResearchAgent")
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
     req_body = req.get_json()
