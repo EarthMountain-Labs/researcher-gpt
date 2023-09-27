@@ -6,3 +6,4 @@ langchain
 bs4
 tiktoken
 uvicorn
+python-jose[cryptography]

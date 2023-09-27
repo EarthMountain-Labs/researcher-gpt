@@ -18,7 +18,6 @@ import json
 from langchain.schema import SystemMessage
 from fastapi import FastAPI, Header, HTTPException, Depends
 from jose import JWTError, jwt
-from docs_researcher import docs_agent
 
 load_dotenv()
 brwoserless_api_key = os.getenv("BROWSERLESS_API_KEY")
@@ -136,13 +135,14 @@ tools = [
     Tool(
         name="Search",
         func=search,
-        description="useful for when you need to answer questions about current events, data. You should ask targeted questions"
+        description="useful for when you need to answer questions about software bugs, how to write code for particular programing languages, and data. You should ask targeted questions"
     ),
     ScrapeWebsiteTool(),
 ]
 
 system_message = SystemMessage(
-    content="""You are a world class researcher, who can do detailed research on any topic and produce facts based results; 
+    content="""You are a world class software researcher, who can do detailed research on technical documentation for any
+            coding task and produce clean, relevent, summarized documentation for your team so they can write better code; 
             you do not make things up, you will try as hard as possible to gather facts & data to back up the research
             
             Please make sure you complete the objective above with the following rules:
@@ -150,8 +150,9 @@ system_message = SystemMessage(
             2/ If there are url of relevant links & articles, you will scrape it to gather more information
             3/ After scraping & search, you should think "is there any new things i should search & scraping based on the data I collected to increase research quality?" If answer is yes, continue; But don't do this more than 3 iteratins
             4/ You should not make things up, you should only write facts & data that you have gathered
-            5/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research
-            6/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research"""
+            5/ You should preserve code examples and code snippets in the documentation as much as possible
+            6/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research
+            7/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research"""
 )
 
 agent_kwargs = {
@@ -161,9 +162,9 @@ agent_kwargs = {
 
 llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
 memory = ConversationSummaryBufferMemory(
-    memory_key="memory", return_messages=True, llm=llm, max_token_limit=1000)
+    memory_key="memory", return_messages=True, llm=llm, max_token_limit=10000)
 
-agent = initialize_agent(
+docs_agent = initialize_agent(
     tools,
     llm,
     agent=AgentType.OPENAI_FUNCTIONS,
@@ -172,62 +173,8 @@ agent = initialize_agent(
     memory=memory,
 )
 
-# 4. Set up authentication
-TENANT_ID = "your_tenant_id"
-CLIENT_ID = "your_client_id"
-SCOPE = "your_scope"
-
-
-def get_jwks_url(tenant_id: str):
-    open_id_config_url = f"https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration"
-    r = requests.get(open_id_config_url)
-    jwks_uri = r.json().get('jwks_uri')
-    return jwks_uri
-
-
-def fetch_signing_keys(jwks_url: str):
-    r = requests.get(jwks_url)
-    return r.json().get("keys")
-
-
-def decode_and_validate_token(token: str = Header(...)):
-    jwks_url = get_jwks_url(TENANT_ID)
-    jwks_keys = fetch_signing_keys(jwks_url)
-
-    for key in jwks_keys:
-        try:
-            decoded_token = jwt.decode(
-                token,
-                key,
-                algorithms=["RS256"],
-                audience=CLIENT_ID,
-                issuer=f"https://sts.windows.net/{TENANT_ID}/",
-            )
-            return decoded_token
-        except JWTError:
-            continue
-    raise HTTPException(status_code=401, detail="Token validation failed")
 
 
 
-# 5. Set this as an API endpoint via FastAPI
-app = FastAPI()
 
 
-class Query(BaseModel):
-    query: str
-
-
-@app.post("/", tags=['secure'])
-def researchAgent(query: Query, token: str = Depends(decode_and_validate_token)):
-    query = query.query
-    content = agent({"input": query})
-    actual_content = content['output']
-    return actual_content
-
-@app.post("/test")
-def test(query: Query):
-    query = query.query
-    content = docs_agent({"input": query})
-    actual_content = content['output']
-    return actual_content
